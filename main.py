@@ -1,9 +1,7 @@
 #! /usr/local/bin/python3
 
 import pytz
-import sys
 import requests
-import time
 from Client import Client
 from datetime import datetime
 
@@ -27,7 +25,7 @@ def get_conference_standings(conference):
     result = parse_json(url)
     conference = result['league']['standard']['conference'][conference]
 
-    standings = """|#|TEAM|W|L|PCT|GB
+    standings_string = """|#|TEAM|W|L|PCT|GB
 |-|-|-|-|-|-|
     """
 
@@ -44,9 +42,49 @@ def get_conference_standings(conference):
             string = f"**{rank}** | {sub} **{nick_name}** | **{wins}** | **{losses}** | **{pct}** | **{gb}**\n"
         else:
             string = f"{rank} | {sub} {nick_name} | {wins} | {losses} | {pct} | {gb}\n"
-        standings = standings + string
+        standings_string = standings_string + string
 
-    return standings
+    return standings_string
+
+
+def get_roster():
+    url = f"{BASE_API_URL}{client.season_year}/players.json"
+    players = parse_json(url)
+    players = players['league']['standard']
+
+    output = [x for x in players if x['teamId'] == client.team_id]
+
+    roster_dict = {}
+
+    for player in output:
+        first_name = player['firstName']
+        last_name = player['lastName']
+        jersey_number = player['jersey']
+        pos = player['pos']
+        college = player['collegeName']
+        country = player['country']
+
+        roster_dict[int(jersey_number)] = {
+            'name': f"{first_name} {last_name}",
+            'pos': pos,
+            'college': college,
+            'country': country
+        }
+
+    roster_string = """No | Name | Pos. | College
+        -|-|-|-
+        """
+
+    for key in sorted(roster_dict):
+        player = roster_dict[key]
+        affiliation = f"{player['college']}"
+
+        if player['college'] == ' ':
+            affiliation = f"*{player['country']}*"
+
+        roster_string = roster_string + f"{key} | {player['name']} | {player['pos']} | {affiliation}\n"
+
+    return roster_string
 
 
 def parse_json(url):
@@ -78,5 +116,6 @@ def nicknames_to_sub_links():
 
 if __name__ == '__main__':
     init()
+    roster = get_roster()
     standings = get_conference_standings('west')
-    client.update_sidebar(standings)
+    client.update_sidebar(standings, roster)

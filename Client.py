@@ -19,6 +19,13 @@ class Client(object):
         sub = self.reddit.subreddit(sub)
         self.mod = sub.mod
 
-    def update_sidebar(self, standings):
-        print(standings)
-        self.mod.update(description=standings)
+    def update_sidebar(self, standings, roster):
+        sidebar_text = ""
+        sidebar_text = sidebar_text + "\n###THUNDER ROSTER\n"
+        sidebar_text = sidebar_text + roster
+        sidebar_text = sidebar_text + "\n###WESTERN CONFERENCE STANDINGS\n"
+        sidebar_text = sidebar_text + standings
+
+        print(sidebar_text)
+
+        self.mod.update(description=sidebar_text)
