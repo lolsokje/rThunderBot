@@ -9,6 +9,7 @@ BASE_API_URL = 'https://data.nba.net/prod/v1/'
 
 client = None
 subs = {}
+teams = {}
 
 
 def init():
@@ -18,6 +19,7 @@ def init():
     json_result = parse_json(url)
     season_details = json_result['teamSitesOnly']
     client = Client(season_details, 'lolsokje')
+    team_ids_to_nicknames()
 
 
 def get_conference_standings(conference):
@@ -25,9 +27,10 @@ def get_conference_standings(conference):
     result = parse_json(url)
     conference = result['league']['standard']['conference'][conference]
 
-    standings_string = """|#|TEAM|W|L|PCT|GB
-|-|-|-|-|-|-|
-    """
+    standings_string = """###WESTERN CONFERENCE STANDINGS
+    # | TEAM | WIN | LOSS | PCT | GB
+        -|-|-|-|-|-
+        """
 
     for team in conference:
         rank = team['confRank']
@@ -38,7 +41,7 @@ def get_conference_standings(conference):
         gb = team['gamesBehind']
         sub = subs[nick_name]
 
-        if nick_name == 'Thunder':
+        if nick_name == client.team_nick_name:
             string = f"**{rank}** | {sub} **{nick_name}** | **{wins}** | **{losses}** | **{pct}** | **{gb}**\n"
         else:
             string = f"{rank} | {sub} {nick_name} | {wins} | {losses} | {pct} | {gb}\n"
@@ -71,7 +74,8 @@ def get_roster():
             'country': country
         }
 
-    roster_string = """No | Name | Pos. | College
+    roster_string = """###THUNDER ROSTER
+    NO | NAME | POS | COLLEGE
         -|-|-|-
         """
 
@@ -85,6 +89,56 @@ def get_roster():
         roster_string = roster_string + f"{key} | {player['name']} | {player['pos']} | {affiliation}\n"
 
     return roster_string
+
+
+def get_schedule():
+    url = f"{BASE_API_URL}{client.season_year}/teams/{client.team_id}/schedule.json"
+    res = parse_json(url)
+    games = res['league']['standard']
+    current_month = datetime.strftime(datetime.today(), '%b')
+    current_month_long = datetime.strftime(datetime.today(), '%B')
+
+    central = pytz.timezone('US/Central')
+    utc = pytz.utc
+
+    schedule_string = f"""###THUNDER {current_month_long.upper()} SCHEDULE
+    DATE | TEAM | LOCATION | RESULT
+    -|-|-|-|-
+    """
+
+    fmt = '%Y-%m-%dT%H:%M:%S.%fZ'
+
+    for game in games:
+        if game['seasonStageId'] == client.season_stage:
+            start_utc = datetime.strptime(game['startTimeUTC'], fmt).replace(tzinfo=utc)
+            start_central = start_utc.astimezone(central)
+            start_date = start_central.strftime('%b %d')
+
+            if current_month == start_central.strftime('%b'):
+                if game['statusNum'] == 3:
+                    home_score = int(game['hTeam']['score'])
+                    away_score = int(game['vTeam']['score'])
+
+                    if game['isHomeTeam']:
+                        win_loss = 'W' if home_score > away_score else 'L'
+                        score = f"{away_score} - **{home_score}**"
+                    else:
+                        win_loss = 'L' if home_score > away_score else 'W'
+                        score = f"**{away_score}** - {home_score}"
+                    result = f"[**{win_loss}** {score}](https://stats.nba.com/game/{game['gameId']})"
+                else:
+                    result = start_central.strftime('%-I:%M %p')
+
+                location = "HOME" if game['isHomeTeam'] else "AWAY"
+                opponent_id = game['vTeam']['teamId'] if game['isHomeTeam'] else game['hTeam']['teamId']
+                nickname = teams[opponent_id]
+                sub = subs[nickname]
+
+                string = f"{start_date} | {sub} {nickname} | {location} | {result}\n"
+
+                schedule_string = schedule_string + string
+
+    return schedule_string
 
 
 def parse_json(url):
@@ -114,8 +168,25 @@ def nicknames_to_sub_links():
     subs = ret
 
 
+def team_ids_to_nicknames():
+    global teams
+    url = f"{BASE_API_URL}/{client.season_year}/teams.json"
+    teams_json = parse_json(url)
+    teams = teams_json['league']['standard']
+
+    ret = {}
+
+    for team in teams:
+        if team['isNBAFranchise']:
+            team_id = team['teamId']
+            ret[team_id] = team['nickname']
+
+    teams = ret
+
+
 if __name__ == '__main__':
     init()
+    schedule = get_schedule()
     roster = get_roster()
     standings = get_conference_standings('west')
-    client.update_sidebar(standings, roster)
+    client.update_sidebar(schedule, standings, roster)
