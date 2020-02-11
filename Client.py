@@ -25,9 +25,13 @@ class Client(object):
 
         sub = self.reddit.subreddit(sub)
         self.mod = sub.mod
+        self.settings = self.mod.settings()
 
     def update_sidebar(self, schedule: str, standings: str, roster: str) -> None:
-        sidebar_text = f"{IMPORTANT_LINKS}{schedule}{standings}{roster}"
+        existing_content = self.settings['description']
+        first_line = existing_content.partition('\n')[0]
+        sidebar_text = f"{first_line}\n" if first_line.startswith('####') else ''
+        sidebar_text = f"{sidebar_text}{IMPORTANT_LINKS}{schedule}{standings}{roster}"
 
         self.mod.update(description=sidebar_text)
 
