@@ -1,4 +1,3 @@
-import requests
 import praw
 import conf
 
@@ -27,13 +26,9 @@ class Client(object):
         sub = self.reddit.subreddit(sub)
         self.mod = sub.mod
 
-    def update_sidebar(self, schedule, standings, roster):
-        sidebar_text = ""
-        sidebar_text = sidebar_text + IMPORTANT_LINKS
-        sidebar_text = sidebar_text + schedule
-        sidebar_text = sidebar_text + roster
-        sidebar_text = sidebar_text + standings
-
-        print(sidebar_text)
+    def update_sidebar(self, schedule: str, standings: str, roster: str) -> None:
+        sidebar_text = f"{IMPORTANT_LINKS}{schedule}{standings}{roster}"
 
         self.mod.update(description=sidebar_text)
+
+        print(sidebar_text)

@@ -12,7 +12,7 @@ subs = {}
 teams = {}
 
 
-def init():
+def init() -> None:
     global client
     nicknames_to_sub_links()
     url = BASE_API_URL + 'today.json'
@@ -22,7 +22,7 @@ def init():
     team_ids_to_nicknames()
 
 
-def get_conference_standings(conference):
+def get_conference_standings(conference: str) -> str:
     url = BASE_API_URL + 'current/standings_conference.json'
     result = parse_json(url)
     conference = result['league']['standard']['conference'][conference]
@@ -50,7 +50,7 @@ def get_conference_standings(conference):
     return standings_string
 
 
-def get_roster():
+def get_roster() -> str:
     url = f"{BASE_API_URL}{client.season_year}/players.json"
     players = parse_json(url)
     players = players['league']['standard']
@@ -91,7 +91,7 @@ def get_roster():
     return roster_string
 
 
-def get_schedule():
+def get_schedule() -> str:
     url = f"{BASE_API_URL}{client.season_year}/teams/{client.team_id}/schedule.json"
     res = parse_json(url)
     games = res['league']['standard']
@@ -141,11 +141,11 @@ def get_schedule():
     return schedule_string
 
 
-def parse_json(url):
+def parse_json(url: str):
     return requests.get(url).json()
 
 
-def nicknames_to_sub_links():
+def nicknames_to_sub_links() -> None:
     global subs
     nicknames = ['76ers', 'Bucks', 'Bulls', 'Cavaliers', 'Celtics', 'Clippers', 'Grizzlies', 'Hawks', 'Heat', 'Hornets',
                  'Jazz', 'Kings', 'Knicks', 'Lakers', 'Magic', 'Mavericks', 'Nets', 'Nuggets', 'Pacers', 'Pelicans',
@@ -168,7 +168,7 @@ def nicknames_to_sub_links():
     subs = ret
 
 
-def team_ids_to_nicknames():
+def team_ids_to_nicknames() -> None:
     global teams
     url = f"{BASE_API_URL}/{client.season_year}/teams.json"
     teams_json = parse_json(url)
