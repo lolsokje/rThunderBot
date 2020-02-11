@@ -18,7 +18,7 @@ def init() -> None:
     url = BASE_API_URL + 'today.json'
     json_result = parse_json(url)
     season_details = json_result['teamSitesOnly']
-    client = Client(season_details, 'lolsokje')
+    client = Client(season_details, 'thunder')
     team_ids_to_nicknames()
 
 
