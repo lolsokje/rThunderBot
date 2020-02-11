@@ -10,7 +10,7 @@ IMPORTANT_LINKS = """### **Important links**
     \n"""
 
 
-class Client(object):
+class Client:
     def __init__(self, season_details, sub):
         self.team_id = '1610612760'
         self.team_name = 'Oklahoma City'

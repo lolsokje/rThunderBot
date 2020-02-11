@@ -99,7 +99,6 @@ def get_schedule() -> str:
     current_month_long = datetime.strftime(datetime.today(), '%B')
 
     central = pytz.timezone('US/Central')
-    utc = pytz.utc
 
     schedule_string = f"""###THUNDER {current_month_long.upper()} SCHEDULE
     DATE | TEAM | LOCATION | RESULT
@@ -110,7 +109,7 @@ def get_schedule() -> str:
 
     for game in games:
         if game['seasonStageId'] == client.season_stage:
-            start_utc = datetime.strptime(game['startTimeUTC'], fmt).replace(tzinfo=utc)
+            start_utc = datetime.strptime(game['startTimeUTC'], fmt).replace(tzinfo=pytz.utc)
             start_central = start_utc.astimezone(central)
             start_date = start_central.strftime('%b %d')
 
