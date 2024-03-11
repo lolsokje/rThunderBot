@@ -12,8 +12,7 @@ RANK_INDEX = 8
 WIN_INDEX = 13
 LOSS_INDEX = 14
 PCT_INDEX = 15
-GB_INDEX = 88
-
+GB_INDEX = 38
 
 class StandingsBuilder:
     def __init__(self, nickname_converter):
