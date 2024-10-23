@@ -20,4 +20,7 @@ class NicknameConverter:
             self.nicknames[nickname] = sub
 
     def convert_name(self, name):
+        if name not in self.nicknames:
+            return ''
+
         return self.nicknames[name]
