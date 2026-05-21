@@ -1,8 +1,7 @@
-import requests
 from datetime import datetime
 import calendar
-from nickname_converter import NicknameConverter
-
+from nba_api.stats.endpoints import scheduleleaguev2
+import json
 
 TEAM_ID = 1610612760
 TODAY = datetime.today()
@@ -11,10 +10,9 @@ MONTH_NAME = calendar.month_name[MONTH_NUMBER]
 
 
 def get_schedule():
-    response = requests.get('https://cdn.nba.com/static/json/staticData/scheduleLeagueV2_1.json')
-    json_data = response.json()
+    schedule = json.loads(scheduleleaguev2.ScheduleLeagueV2().get_json())
 
-    return json_data['leagueSchedule']['gameDates']
+    return schedule['leagueSchedule']['gameDates']
 
 
 class ScheduleBuilder:
